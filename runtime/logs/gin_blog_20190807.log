@@ -1,0 +1,19 @@
+[INFO][article.go:132]2019/08/07 21:31:16 [err.key: %s, err.message: %s tag_id 标签ID必须大于0]
+[INFO][article.go:132]2019/08/07 21:31:16 [err.key: %s, err.message: %s state 状态只允许0或1]
+[INFO][article.go:132]2019/08/07 21:34:46 [tag_id 标签ID必须大于0]
+[INFO][article.go:132]2019/08/07 21:34:46 [state 状态只允许0或1]
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /auth/                    --> gin-blog/routers/api.GetAuth (3 handlers)
+[GIN-debug] GET    /api/v1/tags/             --> gin-blog/routers/api/v1.GetTags (4 handlers)
+[GIN-debug] POST   /api/v1/tags/             --> gin-blog/routers/api/v1.AddTags (4 handlers)
+[GIN-debug] PUT    /api/v1/tags/:id/         --> gin-blog/routers/api/v1.EditTags (4 handlers)
+[GIN-debug] DELETE /api/v1/tags/:id/         --> gin-blog/routers/api/v1.DeleteTag (4 handlers)
+[GIN-debug] GET    /api/v1/articles/         --> gin-blog/routers/api/v1.GetArticles (4 handlers)
+[GIN-debug] GET    /api/v1/articles/:id/     --> gin-blog/routers/api/v1.GetArticle (4 handlers)
+[GIN-debug] POST   /api/v1/articles/         --> gin-blog/routers/api/v1.AddArticle (4 handlers)
+[GIN-debug] PUT    /api/v1/articles/:id/     --> gin-blog/routers/api/v1.EditArticle (4 handlers)
+[GIN-debug] DELETE /api/v1/articles/:id/     --> gin-blog/routers/api/v1.DeleteArticle (4 handlers)
+[GIN] 2019/08/07 - 21:41:36 | 200 |   17.924605ms |       127.0.0.1 | GET      /api/v1/articles/
