@@ -94,8 +94,14 @@ func AddTags(c *gin.Context) {
 func EditTags(c *gin.Context) {
 	// c.Param 获取的是URL路径参数 c.Query 获取的是URL ?拼接后的参数
 	id := com.StrTo(c.Param("id")).MustInt()
-	name := c.Query("name")
-	modifiedBy := c.Query("modified_by")
+	tmp := make(map[string]interface{})
+	body, _ := ioutil.ReadAll(c.Request.Body)
+	err := json.Unmarshal(body, &tmp)
+	if err != nil {
+		logging.Fatal(err.Error())
+	}
+	name := tmp["name"].(string)
+	updatedBy := tmp["updated_by"].(string)
 
 	valid := validation.Validation{}
 
@@ -106,9 +112,9 @@ func EditTags(c *gin.Context) {
 	}
 
 	valid.Required(id, "id").Message("ID不能为空")
-	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
+	valid.Required(updatedBy, "updated_by").Message("修改人不能为空")
 	valid.Required(name, "name").Message("名称不能为空")
-	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
+	valid.MaxSize(updatedBy, 100, "updated_by").Message("修改人最长为100字符")
 	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
 
 	code := e.INVALID_PARAMS
@@ -116,7 +122,7 @@ func EditTags(c *gin.Context) {
 		code = e.SUCCESS
 		if ok, _ := models.ExistTagByID(id); ok {
 			data := make(map[string]interface{})
-			data["modified_by"] = modifiedBy
+			data["updated_by"] = updatedBy
 			data["name"] = name
 			if state != -1 {
 				data["state"] = state
@@ -136,8 +142,7 @@ func EditTags(c *gin.Context) {
 
 // 删除文章标签
 func DeleteTag(c *gin.Context) {
-	id := com.StrTo(c.Query("id")).MustInt()
-
+	id := com.StrTo(c.Param("id")).MustInt()
 	valid := validation.Validation{}
 	valid.Min(id, 0, "id").Message("id必须大于0")
 
