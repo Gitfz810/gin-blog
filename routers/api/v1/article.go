@@ -59,12 +59,12 @@ func GetArticles(c *gin.Context) {
 		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 	}
 
-	var tagId int = -1
+	/*var tagId int = -1
 	if arg := c.Query("tag_id"); arg != "" {
 		tagId = com.StrTo(arg).MustInt()
 		maps["tag_id"] = tagId
 		valid.Min(tagId, 0, "tag_id").Message("标签ID必须大于0")
-	}
+	}*/
 
 	code := e.INVALID_PARAMS
 	if ! valid.HasErrors() {
@@ -94,7 +94,6 @@ func AddArticle(c *gin.Context) {
 		logging.Fatal(err.Error())
 	}
 
-	tagId := int(jsonObj["tag_id"].(float64))
 	title := jsonObj["title"].(string)
 	desc := jsonObj["desc"].(string)
 	content := jsonObj["content"].(string)
@@ -102,7 +101,6 @@ func AddArticle(c *gin.Context) {
 	state := int(jsonObj["state"].(float64))
 
 	valid := validation.Validation{}
-	valid.Min(tagId, 1, "tag_id").Message("标签ID必须大于0")
 	valid.Required(title, "title").Message("标题不能为空")
 	valid.MaxSize(title, 50, "title").Message("标题字符最长50个字符")
 	valid.MaxSize(desc, 100, "desc").Message("简述最长100个字符")
@@ -113,20 +111,15 @@ func AddArticle(c *gin.Context) {
 
 	code := e.INVALID_PARAMS
 	if ! valid.HasErrors() {
-		if ok, _ := models.ExistTagByID(tagId); ok {
-			data := make(map[string]interface{})
-			data["tag_id"] = tagId
-			data["title"] = title
-			data["desc"] = desc
-			data["content"] = content
-			data["created_by"] = createdBy
-			data["state"] = state
+		data := make(map[string]interface{})
+		data["title"] = title
+		data["desc"] = desc
+		data["content"] = content
+		data["created_by"] = createdBy
+		data["state"] = state
 
-			models.AddArticle(data)
-			code = e.SUCCESS
-		} else {
-			code = e.ERROR_NOT_EXIST_TAG
-		}
+		models.AddArticle(data)
+		code = e.SUCCESS
 	} else {
 		for _, err := range valid.Errors {
 			logging.Info(err.Key, err.Message)
@@ -150,11 +143,11 @@ func EditArticle(c *gin.Context) {
 	}
 
 	id := com.StrTo(c.Param("id")).MustInt()
-	tagId := int(jsonObj["tag_id"].(float64))
 	title := jsonObj["title"].(string)
+	tagNames := jsonObj["tag_names"].([]interface{})
 	desc := jsonObj["desc"].(string)
 	content := jsonObj["content"].(string)
-	modifiedBy := jsonObj["modified_by"].(string)
+	updatedBy := jsonObj["updated_by"].(string)
 
 	valid := validation.Validation{}
 	var state int = -1
@@ -167,33 +160,31 @@ func EditArticle(c *gin.Context) {
 	valid.MaxSize(title, 100, "title").Message("标题最长为100字符")
 	valid.MaxSize(desc, 255, "desc").Message("简述最长为255字符")
 	valid.MaxSize(content, 65535, "content").Message("内容最长为65535字符")
-	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
-	valid.MaxSize(modifiedBy, 100, "modified_by").Message("修改人最长为100字符")
+	valid.Required(updatedBy, "updated_by").Message("修改人不能为空")
+	valid.MaxSize(updatedBy, 100, "updated_by").Message("修改人最长为100字符")
+
+	res := make([]string, len(tagNames))
+	for i, name := range tagNames {
+		res[i] = name.(string)
+	}
 
 	code := e.INVALID_PARAMS
 	if ! valid.HasErrors() {
 		if ok, _ := models.ExistArticleByID(id); ok {
-			if ok, _ = models.ExistTagByID(tagId); ok {
-				data := make(map[string]interface{})
-				if tagId > 0 {
-					data["tag_id"] = tagId
-				}
-				if title != "" {
-					data["title"] = title
-				}
-				if desc != "" {
-					data["desc"] = desc
-				}
-				if content != "" {
-					data["content"] = content
-				}
-				data["modified_by"] = modifiedBy
-
-				models.EditArticle(id, data)
-				code = e.SUCCESS
-			} else {
-				code = e.ERROR_NOT_EXIST_TAG
+			data := make(map[string]interface{})
+			if title != "" {
+				data["title"] = title
 			}
+			if desc != "" {
+				data["desc"] = desc
+			}
+			if content != "" {
+				data["content"] = content
+			}
+			data["updated_by"] = updatedBy
+			models.UpdateTags(id, res)
+			models.EditArticle(id, data)
+			code = e.SUCCESS
 		} else {
 			code = e.ERROR_NOT_EXIST_ARTICLE
 		}

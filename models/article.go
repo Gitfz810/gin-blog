@@ -1,24 +1,28 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+
+	"gin-blog/pkg/set"
+)
 
 type Article struct {
 	Model
 
-	TagID int `gorm:"index" json:"tag_id"`
-	Tag   Tag `json:"tag"`  // 1 对 1
+	//TagID     int    `gorm:"index" json:"tag_id"`
+	Tag       []Tag  `gorm:"many2many:blog_article_tag;" json:"tag"`  // 多对多
 
-	Title      string `json:"title"`
-	Desc       string `json:"desc"`
-	Content    string `json:"content"`
-	CreatedBy  string `json:"created_by"`
-	ModifiedBy string `json:"modified_by"`
-	State      int    `json:"state"`
+	Title     string `json:"title"`
+	Desc      string `json:"desc"`
+	Content   string `json:"content"`
+	CreatedBy string `json:"created_by"`
+	UpdatedBy string `json:"updated_by"`
+	State     int    `json:"state"`
 }
 
 func ExistArticleByID(id int) (bool, error) {
 	var article Article
-	err := db.Select("id").Where("id = ? AND deleted_on is NULL", id).First(&article).Error
+	err := db.Select("id").Where("id = ?", id).First(&article).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
@@ -39,7 +43,7 @@ func GetArticleTotal(maps interface{}) (count int, err error) {
 
 func GetArticles(pageNum, pageSize int, maps interface{}) (article []*Article, err error) {
 	// gorm默认不会查询外键对象，如果想把结构体字段的内容也查询出来，可以使用Preload函数预加载这个结构体
-	err = db.Preload("Tag").Where(maps).Where("deleted_on is NULL").Offset(pageNum).Limit(pageSize).Find(&article).Error
+	err = db.Preload("Tag").Where(maps).Offset(pageNum).Limit(pageSize).Find(&article).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -52,7 +56,7 @@ func GetArticleById(id int) (article *Article, err error) {
 	db.Where("id=?", id).First(&article)
 	// 更具关联关系查找文章拥有的tag
 	db.Model(&article).Related(&article.Tag)*/
-	err = db.Preload("Tag").Where("id = ? AND deleted_on is NULL", id).First(&article).Error
+	err = db.Preload("Tag").Where("id = ?", id).First(&article).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -60,7 +64,7 @@ func GetArticleById(id int) (article *Article, err error) {
 }
 
 func EditArticle(id int, data interface{}) error {
-	if err := db.Model(&Article{}).Where("id = ? AND deleted_on is NULL", id).Update(data).Error; err != nil {
+	if err := db.Model(&Article{}).Where("id = ?", id).Update(data).Error; err != nil {
 		return err
 	}
 
@@ -69,7 +73,6 @@ func EditArticle(id int, data interface{}) error {
 
 func AddArticle(data map[string]interface{}) error {
 	article := Article{
-		TagID: data["tag_id"].(int),
 		Title: data["title"].(string),
 		Desc: data["desc"].(string),
 		Content: data["content"].(string),
@@ -83,8 +86,46 @@ func AddArticle(data map[string]interface{}) error {
 	return nil
 }
 
+func UpdateTags(articleID int, 	tagNames []string) error {
+	// 查询已存在的 tag
+	existTags, err := tags(articleID)
+	if err != nil {
+		return err
+	}
+
+	// 确保需要插入 tag 存在
+	for _, name := range tagNames {
+		if ok, _ := ExistTagByName(name); !ok {
+			err := AddTag(name, 1, "")
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	updateTagNames := set.New(tagNames)
+	existsTagNames := set.New(existTags)
+
+	needAddNames := updateTagNames.Minus(existsTagNames)
+	for _, name := range needAddNames.SortList() {
+		err := addAritcleTag(articleID, name)
+		if err != nil {
+			return err
+		}
+	}
+	needDeleteNames := existsTagNames.Minus(updateTagNames)
+	for _, name := range needDeleteNames.SortList() {
+		err := deleteArticleTag(articleID, name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func DeleteArticle(id int) error {
-	if err := db.Debug().Where("id = ?", id).Delete(Article{}).Error; err != nil {
+	if err := db.Where("id = ?", id).Delete(Article{}).Error; err != nil {
 		return err
 	}
 	return nil

@@ -15,10 +15,11 @@ import (
 var db *gorm.DB
 
 type Model struct {
-	ID int `gorm:"primary_key" json:"id"`
-	CreatedOn *time.Time `json:"created_on"`
-	ModifiedOn *time.Time `json:"modified_on"`
-	DeletedOn *time.Time `json:"deleted_on"`
+	ID        int        `gorm:"primary_key" json:"id"`
+	CreatedAt *time.Time `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+	//gorm.Model
 }
 
 func init() {
@@ -68,7 +69,7 @@ func init() {
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)
 	db.Callback().Delete().Replace("gorm:delete", deleteCallback)
 	// 显示执行的SQL语句
-	//db.LogMode(true)
+	db.LogMode(true)
 }
 
 func CloseDB() {
@@ -79,13 +80,13 @@ func CloseDB() {
 func updateTimeStampForCreateCallback(scope *gorm.Scope) {
 	if ! scope.HasError() {
 		nowTime := util.GetTime()
-		if createTimeField, ok := scope.FieldByName("CreatedOn"); ok {
+		if createTimeField, ok := scope.FieldByName("CreatedAt"); ok {
 			if createTimeField.IsBlank {
 				createTimeField.Set(nowTime)
 			}
 		}
 
-		if modifyTimeField, ok := scope.FieldByName("ModifiedOn"); ok {
+		if modifyTimeField, ok := scope.FieldByName("UpdatedAt"); ok {
 			if modifyTimeField.IsBlank {
 				modifyTimeField.Set(nowTime)
 			}
@@ -95,8 +96,9 @@ func updateTimeStampForCreateCallback(scope *gorm.Scope) {
 
 // updateTimeStampForUpdateCallback will set `ModifiedOn` when updating
 func updateTimeStampForUpdateCallback(scope *gorm.Scope) {
+	// 查询是否有指定`update_column`字段的column
 	if _, ok := scope.Get("gorm:update_column"); !ok {
-		scope.SetColumn("ModifiedOn", util.GetTime())
+		scope.SetColumn("UpdatedAt", util.GetTime())
 	}
 }
 
@@ -108,7 +110,7 @@ func deleteCallback(scope *gorm.Scope) {
 			extraOption = fmt.Sprint(str)
 		}
 
-		deletedOnField, hasDeletedOnField := scope.FieldByName("DeletedOn")
+		deletedOnField, hasDeletedOnField := scope.FieldByName("DeletedAt")
 		if ! scope.Search.Unscoped && hasDeletedOnField {
 			scope.Raw(fmt.Sprintf(
 				"UPDATE %v SET %v=%v%v%v",

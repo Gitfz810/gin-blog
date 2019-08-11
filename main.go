@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"syscall"
-
-	"github.com/fvbock/endless"
+	"net/http"
 
 	"gin-blog/pkg/setting"
 	"gin-blog/routers"
 )
 
 func main() {
-	endless.DefaultReadTimeOut = setting.ReadTimeOut
+	/*endless.DefaultReadTimeOut = setting.ReadTimeOut
 	endless.DefaultWriteTimeOut = setting.WriteTimeOut
 	endless.DefaultMaxHeaderBytes = 1 << 20
 	endPoint := fmt.Sprintf(":%d", setting.HTTPPort)
@@ -25,10 +22,10 @@ func main() {
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Printf("Server err: %v", err)
-	}
+	}*/
 
 
-	/*router := routers.InitRouter()
+	router := routers.InitRouter()
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
@@ -41,5 +38,5 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	s.ListenAndServe()*/
+	s.ListenAndServe()
 }
