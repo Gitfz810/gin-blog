@@ -10,7 +10,7 @@ type Article struct {
 	Model
 
 	//TagID     int    `gorm:"index" json:"tag_id"`
-	Tag       []Tag  `gorm:"many2many:blog_article_tag;" json:"tag"`  // 多对多
+	Tag       []Tag  `gorm:"many2many:article_tag;" json:"tag"`  // 多对多
 
 	Title     string `json:"title"`
 	Desc      string `json:"desc"`
@@ -51,12 +51,8 @@ func GetArticles(pageNum, pageSize int, maps interface{}) (article []*Article, e
 	return
 }
 
-func GetArticleById(id int) (article *Article, err error) {
-	/*// 更具id获取对应文章
-	db.Where("id=?", id).First(&article)
-	// 更具关联关系查找文章拥有的tag
-	db.Model(&article).Related(&article.Tag)*/
-	err = db.Preload("Tag").Where("id = ?", id).First(&article).Error
+func GetArticleById(id int) (articles []*Article, err error) {
+	err = db.Preload("Tag").Where("id = ?", id).Find(&articles).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
