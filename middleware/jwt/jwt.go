@@ -1,9 +1,7 @@
 package jwt
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -19,14 +17,13 @@ func JWT() gin.HandlerFunc {
 		var data interface{}
 
 		code = e.SUCCESS
-		tmp := make(map[string]interface{})
-		body, _ := ioutil.ReadAll(c.Request.Body)
-		json.Unmarshal(body, &tmp)
-		token, ok := tmp["token"]
-		if token == "" || !ok {
-			code = e.INVALID_PARAMS
+		token, err := c.Cookie("token")
+		fmt.Println(token)
+		if token == "" || err != nil {
+			fmt.Println("111")
+			code = e.ERROR_AUTH_TOKEN
 		} else {
-			claims, err := util.ParseToken(token.(string))
+			claims, err := util.ParseToken(token)
 			if err != nil {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 			} else if time.Now().Unix() > claims.ExpiresAt {
@@ -45,7 +42,7 @@ func JWT() gin.HandlerFunc {
 			return
 		}
 		// 执行下一步  NopCloser 返回一个包裹起给定 Reader r 的 ReadCloser
-		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		//c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 		c.Next()
 	}
 }

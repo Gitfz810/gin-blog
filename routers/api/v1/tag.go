@@ -37,7 +37,7 @@ func GetTags(c *gin.Context) {
 
 	code := e.SUCCESS
 
-	data["lists"], _ = models.GetTags(util.GetPage(c), setting.PageSize, maps)
+	data["lists"], _ = models.GetTags(util.GetPage(c), setting.AppSetting.PageSize, maps)
 
 	data["total"], _ = models.GetTagTotal(maps)
 

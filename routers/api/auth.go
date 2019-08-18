@@ -48,6 +48,7 @@ func GetAuth(c *gin.Context)  {
 				code = e.ERROR_AUTH_TOKEN
 			} else {
 				data["token"] = token
+				c.SetCookie("token", token, 3600, "/", "localhost",false, true)
 				code = e.SUCCESS
 			}
 		} else {

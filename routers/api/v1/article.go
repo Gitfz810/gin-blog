@@ -70,7 +70,7 @@ func GetArticles(c *gin.Context) {
 	if ! valid.HasErrors() {
 		code = e.SUCCESS
 
-		data["lists"], _ = models.GetArticles(util.GetPage(c), setting.PageSize, maps)
+		data["lists"], _ = models.GetArticles(util.GetPage(c), setting.AppSetting.PageSize, maps)
 		data["total"], _ = models.GetArticleTotal(maps)
 	} else {
 		for _, err := range valid.Errors {
@@ -99,6 +99,7 @@ func AddArticle(c *gin.Context) {
 	content := jsonObj["content"].(string)
 	createdBy := jsonObj["created_by"].(string)
 	state := int(jsonObj["state"].(float64))
+	image := jsonObj["cover_image_url"].(string)
 
 	valid := validation.Validation{}
 	valid.Required(title, "title").Message("标题不能为空")
@@ -108,6 +109,8 @@ func AddArticle(c *gin.Context) {
 	valid.Required(content, "content").Message("内容不能为空")
 	valid.Required(createdBy, "created_by").Message("创建人不能为空")
 	valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
+	valid.Required(image, "cover_image_url").Message("封面图片不可为空")
+	valid.MaxSize(image, 255, "cover_image_url").Message("封面图片地址最长为255个字符")
 
 	code := e.INVALID_PARAMS
 	if ! valid.HasErrors() {
@@ -117,6 +120,7 @@ func AddArticle(c *gin.Context) {
 		data["content"] = content
 		data["created_by"] = createdBy
 		data["state"] = state
+		data["cover_image_url"] = image
 
 		models.AddArticle(data)
 		code = e.SUCCESS
@@ -148,6 +152,7 @@ func EditArticle(c *gin.Context) {
 	desc := jsonObj["desc"].(string)
 	content := jsonObj["content"].(string)
 	updatedBy := jsonObj["updated_by"].(string)
+	image := jsonObj["cover_image_url"].(string)
 
 	valid := validation.Validation{}
 	var state int = -1
@@ -162,6 +167,8 @@ func EditArticle(c *gin.Context) {
 	valid.MaxSize(content, 65535, "content").Message("内容最长为65535字符")
 	valid.Required(updatedBy, "updated_by").Message("修改人不能为空")
 	valid.MaxSize(updatedBy, 100, "updated_by").Message("修改人最长为100字符")
+	valid.Required(image, "cover_image_url").Message("封面图片不可为空")
+	valid.MaxSize(image, 255, "cover_image_url").Message("封面图片地址最长为255个字符")
 
 	res := make([]string, len(tagNames))
 	for i, name := range tagNames {
@@ -181,6 +188,7 @@ func EditArticle(c *gin.Context) {
 			if content != "" {
 				data["content"] = content
 			}
+			data["cover_image_url"] = image
 			data["updated_by"] = updatedBy
 			models.UpdateTags(id, res)
 			models.EditArticle(id, data)

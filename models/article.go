@@ -12,12 +12,13 @@ type Article struct {
 	//TagID     int    `gorm:"index" json:"tag_id"`
 	Tag       []Tag  `gorm:"many2many:article_tag;" json:"tag"`  // 多对多
 
-	Title     string `json:"title"`
-	Desc      string `json:"desc"`
-	Content   string `json:"content"`
-	CreatedBy string `json:"created_by"`
-	UpdatedBy string `json:"updated_by"`
-	State     int    `json:"state"`
+	Title         string `json:"title"`
+	Desc          string `json:"desc"`
+	Content       string `json:"content"`
+	CoverImageUrl string `json:"cover_image_url"`
+	CreatedBy     string `json:"created_by"`
+	UpdatedBy     string `json:"updated_by"`
+	State         int    `json:"state"`
 }
 
 func ExistArticleByID(id int) (bool, error) {
@@ -72,6 +73,7 @@ func AddArticle(data map[string]interface{}) error {
 		Title: data["title"].(string),
 		Desc: data["desc"].(string),
 		Content: data["content"].(string),
+		CoverImageUrl: data["cover_image_url"].(string),
 		CreatedBy: data["created_by"].(string),
 		State: data["state"].(int),
 	}
@@ -125,6 +127,13 @@ func DeleteArticle(id int) error {
 		return err
 	}
 	return nil
+}
+// 硬删除 使用Unscoped() GORM的约定
+func CleanAllArticle() (bool, error) {
+	if err := db.Unscoped().Delete(&Article{}).Error; err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 /*func (article *Article) BeforeCreate(scope *gorm.Scope) error {

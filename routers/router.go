@@ -1,10 +1,12 @@
 package routers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 
 	"gin-blog/middleware/jwt"
-	"gin-blog/pkg/setting"
+	"gin-blog/pkg/upload"
 	"gin-blog/routers/api"
 	"gin-blog/routers/api/v1"
 )
@@ -18,16 +20,11 @@ func InitRouter() *gin.Engine {
 	// 加载gin自带的logger和recovery中间件
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	// 通过setting.RunMode设置运行模式
-	gin.SetMode(setting.RunMode)
+
+	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
 	r.POST("/auth/", api.GetAuth)
-	// test
-	/*r.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "test",
-		})
-	})*/
+	r.POST("/upload/", jwt.JWT(),api.UploadImage)
 
 	apiv1 := r.Group("/api/v1")
 	//apiv1.Use(jwt.JWT())

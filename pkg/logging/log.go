@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"gin-blog/pkg/file"
 )
 
 type Level int
@@ -29,9 +31,13 @@ const (
 	FATAL
 )
 
-func init() {
-	filePath := getLogFileFullPath()
-	F = openLogFile(filePath)
+func Setup() {
+	filePath := getLogFilePath()
+	fileName := getLogFileName()
+	F, err := file.MustOpen(fileName, filePath)
+	if err != nil {
+		log.Fatalf("logging.Setup err: %v", err)
+	}
 
 	logger = log.New(F, DefaultPrefix, log.LstdFlags)
 }

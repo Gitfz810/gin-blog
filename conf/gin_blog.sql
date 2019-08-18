@@ -22,6 +22,7 @@ CREATE TABLE `blog_article` (
   `updated_at` datetime COMMENT '修改时间',
   `updated_by` varchar(255) DEFAULT '' COMMENT '修改人',
   `deleted_at` datetime COMMENT '删除时间',
+  `cover_image_url` varchar(255) DEFAULT '' COMMENT '封面图片地址',
   `state` tinyint(3) unsigned DEFAULT '1' COMMENT '状态 0为禁用1为启用',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='文章管理';

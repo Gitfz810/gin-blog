@@ -110,6 +110,13 @@ func DeleteTag(id int) error {
 	return nil
 }
 
+func CleanAllTag() (bool, error) {
+	if err := db.Unscoped().Delete(&Tag{}).Error; err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 /*func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("CreatedOn", util.GetTime())
 	

@@ -22,25 +22,22 @@ type Model struct {
 	//gorm.Model
 }
 
-func init() {
+func Setup() {
 	var (
 		err error
 		connTimeout int
 		dbType, dbName, user, password, host, tablePrefix string
 	)
 
-	dbInfo, err := setting.Cfg.GetSection("database")
-	if err != nil {
-		log.Fatal(2, "Fail to get section 'database': %v", err)
-	}
+	dbInfo := setting.DatabaseSetting
 
-	dbType = dbInfo.Key("TYPE").String()
-	dbName = dbInfo.Key("NAME").String()
-	user = dbInfo.Key("USER").String()
-	password = dbInfo.Key("PASSWORD").String()
-	host = dbInfo.Key("HOST").String()
-	tablePrefix = dbInfo.Key("TABLE_PREFIX").String()
-	connTimeout, _ = dbInfo.Key("CONN_TIMEOUT").Int()
+	dbType = dbInfo.Type
+	dbName = dbInfo.Name
+	user = dbInfo.User
+	password = dbInfo.Password
+	host = dbInfo.Host
+	tablePrefix = dbInfo.TablePrefix
+	connTimeout = dbInfo.ConnTimeout
 
 	// 正确的处理 time.Time ，需要包含 parseTime 参数 loc 指定时区
 	db, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
@@ -49,7 +46,7 @@ func init() {
 		host,
 		dbName))
 	if err != nil {
-		log.Println(err)
+		log.Fatalf("models.Setup err: %v", err)
 	}
 
 	// 更改默认表名 对表名增加前缀
