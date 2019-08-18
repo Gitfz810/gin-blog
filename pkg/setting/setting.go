@@ -40,10 +40,19 @@ type Database struct {
 	ConnTimeout int
 }
 
+type Redis struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
 var (
 	AppSetting = &App{}
 	ServerSetting = &Server{}
 	DatabaseSetting = &Database{}
+	RedisSetting = &Redis{}
 	cfg *ini.File
 )
 
@@ -56,10 +65,12 @@ func Setup() {
 	mapTo("app", AppSetting)
 	mapTo("server", ServerSetting)
 	mapTo("database", DatabaseSetting)
+	mapTo("redis", RedisSetting)
 
 	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
+	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second
 }
 
 // mapto map section
