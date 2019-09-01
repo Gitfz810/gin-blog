@@ -20,7 +20,6 @@ func JWT() gin.HandlerFunc {
 		token, err := c.Cookie("token")
 		fmt.Println(token)
 		if token == "" || err != nil {
-			fmt.Println("111")
 			code = e.ERROR_AUTH_TOKEN
 		} else {
 			claims, err := util.ParseToken(token)

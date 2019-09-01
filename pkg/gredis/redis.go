@@ -22,12 +22,12 @@ func Setup() error {
 		Dial: func() (conn redis.Conn, e error) {
 			conn, e = redis.Dial("tcp", setting.RedisSetting.Host)
 			if e != nil {
-				return
+				return nil, e
 			}
 			if setting.RedisSetting.Password != "" {
 				if _, e = conn.Do("AUTH", setting.RedisSetting.Password); e != nil {
 					conn.Close()
-					return
+					return nil, e
 				}
 			}
 			return

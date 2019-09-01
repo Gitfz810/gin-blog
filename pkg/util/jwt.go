@@ -4,11 +4,9 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-
-	"gin-blog/pkg/setting"
 )
 
-var jwtSecret = []byte(setting.AppSetting.JwtSecret)
+var jwtSecret []byte
 
 type Claims struct {
 	Username string `json:"username"`

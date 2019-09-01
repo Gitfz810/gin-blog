@@ -7,8 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"gin-blog/models"
+	"gin-blog/pkg/gredis"
 	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
+	"gin-blog/pkg/util"
 	"gin-blog/routers"
 )
 
@@ -16,6 +18,8 @@ func init() {
 	setting.Setup()
 	models.Setup()
 	logging.Setup()
+	gredis.Setup()
+	util.Setup()
 }
 
 func main() {

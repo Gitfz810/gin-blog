@@ -10,7 +10,7 @@ type Article struct {
 	Model
 
 	//TagID     int    `gorm:"index" json:"tag_id"`
-	Tag       []Tag  `gorm:"many2many:article_tag;" json:"tag"`  // 多对多
+	Tag           []Tag  `gorm:"many2many:article_tag;" json:"tag"`  // 多对多
 
 	Title         string `json:"title"`
 	Desc          string `json:"desc"`
@@ -52,7 +52,7 @@ func GetArticles(pageNum, pageSize int, maps interface{}) (article []*Article, e
 	return
 }
 
-func GetArticleById(id int) (articles []*Article, err error) {
+func GetArticleByID(id int) (articles *Article, err error) {
 	err = db.Preload("Tag").Where("id = ?", id).Find(&articles).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -61,7 +61,7 @@ func GetArticleById(id int) (articles []*Article, err error) {
 }
 
 func EditArticle(id int, data interface{}) error {
-	if err := db.Model(&Article{}).Where("id = ?", id).Update(data).Error; err != nil {
+	if err := db.Model(&Article{}).Where("id = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
 
@@ -129,11 +129,11 @@ func DeleteArticle(id int) error {
 	return nil
 }
 // 硬删除 使用Unscoped() GORM的约定
-func CleanAllArticle() (bool, error) {
+func CleanAllArticle() error {
 	if err := db.Unscoped().Delete(&Article{}).Error; err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 /*func (article *Article) BeforeCreate(scope *gorm.Scope) error {
