@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -12,6 +13,7 @@ import (
 func BindAndValid(c *gin.Context, form interface{}) (int, int) {
 	err := c.ShouldBindJSON(form)
 	if err != nil {
+		fmt.Println(111)
 		return http.StatusBadRequest, e.INVALID_PARAMS
 	}
 

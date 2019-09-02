@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"gin-blog/pkg/setting"
-	"gin-blog/pkg/util"
 	"net/http"
 
 	"github.com/Unknwon/com"
@@ -11,6 +9,8 @@ import (
 
 	"gin-blog/pkg/app"
 	"gin-blog/pkg/e"
+	"gin-blog/pkg/setting"
+	"gin-blog/pkg/util"
 	"gin-blog/service/articleservice"
 )
 
@@ -89,12 +89,12 @@ func GetArticles(c *gin.Context) {
 }
 
 type AddArticleForm struct {
-	Title         string `form:"title" json:"title"valid:"Required;MaxSize(100)"`
-	Desc          string `form:"desc" json:"desc"valid:"Required;MaxSize(255)"`
-	Content       string `form:"content" json:"content"valid:"Required;MaxSize(65535)"`
-	CreatedBy     string `form:"created_by" json:"created_by"valid:"Required;MaxSize(100)"`
-	CoverImageUrl string `form:"cover_image_url" json:"cover_image_url"valid:"Required;MaxSize(255)"`
-	State         int    `form:"state" json:"state"valid:"Range(0,1)"`
+	Title         string `form:"title" json:"title" valid:"Required;MaxSize(100)"`
+	Desc          string `form:"desc" json:"desc" valid:"Required;MaxSize(255)"`
+	Content       string `form:"content" json:"content" valid:"Required;MaxSize(65535)"`
+	CreatedBy     string `form:"created_by" json:"created_by" valid:"Required;MaxSize(100)"`
+	CoverImageUrl string `form:"cover_image_url" json:"cover_image_url" valid:"MaxSize(255)"`
+	State         int    `form:"state" json:"state" valid:"Range(0,1)"`
 }
 
 // 新增文章
@@ -117,6 +117,7 @@ func AddArticle(c *gin.Context) {
 		CreatedBy:     form.CreatedBy,
 		CoverImageUrl: form.CoverImageUrl,
 		State:         form.State,
+		PageSize:      setting.AppSetting.PageSize,
 	}
 	if err := articleService.Add(); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_ARTICLE_FAIL, nil)
@@ -132,7 +133,7 @@ type EditArticleForm struct {
 	Desc          string   `form:"desc" json:"desc" valid:"Required;MaxSize(255)"`
 	Content       string   `form:"content" json:"content" valid:"Required;MaxSize(65535)"`
 	UpdatedBy     string   `form:"updated_by" json:"updated_by" valid:"Required;MaxSize(100)"`
-	CoverImageUrl string   `form:"cover_image_url" json:"cover_image_url" valid:"Required;MaxSize(255)"`
+	CoverImageUrl string   `form:"cover_image_url" json:"cover_image_url" valid:"MaxSize(255)"`
 	State         int      `form:"state" json:"state" valid:"Range(0,1)"`
 }
 

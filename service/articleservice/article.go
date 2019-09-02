@@ -2,6 +2,8 @@ package articleservice
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"gin-blog/models"
 	"gin-blog/pkg/gredis"
 	"gin-blog/pkg/logging"
@@ -36,7 +38,21 @@ func (a *Article) Add() error {
 	if err := models.AddArticle(article); err != nil {
 		return err
 	}
+	// update cache
+	cache := cacheservice.Article{
+		State: a.State,
 
+		PageNum:  a.PageNum,
+		PageSize: a.PageSize,
+	}
+	key := cache.GetArticlesKey()
+	if gredis.Exists(key) {
+		_, err := gredis.Delete(key)
+		if err != nil {
+			fmt.Println(111)
+			return err
+		}
+	}
 	return nil
 }
 
@@ -59,6 +75,15 @@ func (a *Article) Edit() error {
 
 	if err := models.EditArticle(a.ID, article); err != nil {
 		return err
+	}
+	// update cache
+	cache := cacheservice.Article{ID: a.ID}
+	key := cache.GetArticleKey()
+	if gredis.Exists(key) {
+		_, err := gredis.Delete(key)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
