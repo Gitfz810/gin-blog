@@ -100,7 +100,7 @@ func UpdateTags(articleID int, 	tagNames []string) error {
 			}
 		}
 	}
-
+	// 集合应用 更新tag
 	updateTagNames := set.New(tagNames)
 	existsTagNames := set.New(existTags)
 
